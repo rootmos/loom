@@ -1,5 +1,8 @@
 REBAR ?= ./rebar3
 
+run: release
+	_build/default/rel/loom/bin/loom foreground
+
 release: | $(REBAR)
 	$(REBAR) release
 

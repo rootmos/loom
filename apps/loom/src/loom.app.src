@@ -4,9 +4,7 @@
   {registered, []},
   {mod, {loom_app, []}},
   {applications,
-   [kernel,
-    stdlib
-   ]},
+   [kernel, stdlib, cowboy]},
   {env,[]},
   {modules, []},
 
