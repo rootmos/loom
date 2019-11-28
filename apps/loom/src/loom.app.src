@@ -5,7 +5,7 @@
   {mod, {loom_app, []}},
   {applications,
    [kernel, stdlib, cowboy]},
-  {env,[]},
+  {env, []},
   {modules, []},
 
   {licenses, []},

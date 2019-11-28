@@ -1,2 +1,3 @@
 _build
 rebar3
+rebar3.crashdump
