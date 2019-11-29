@@ -1,0 +1,3 @@
+.*.flag
+venv
+__pycache__
