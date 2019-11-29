@@ -1,9 +1,10 @@
 REBAR ?= ./rebar3
 
-run: release
+run:
 	_build/default/rel/loom/bin/loom foreground
 
 release: | $(REBAR)
+	$(REBAR) arweave compile
 	$(REBAR) release
 
 $(REBAR):
@@ -13,4 +14,11 @@ $(REBAR):
 clean:
 	rm -rf _build
 
-.PHONY: release clean
+DOCKER_COMPOSE ?= docker-compose
+
+test-compose:
+	$(DOCKER_COMPOSE) build
+	$(DOCKER_COMPOSE) up --detach --force-recreate loom
+	$(DOCKER_COMPOSE) run tests
+
+.PHONY: run release clean test-compose

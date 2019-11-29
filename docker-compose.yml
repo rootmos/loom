@@ -1,0 +1,19 @@
+version: "3"
+services:
+  loom:
+    build: .
+    networks:
+      - loom
+  tests:
+    build: tests
+    command: wait test stop
+    networks:
+      - loom
+    depends_on:
+      - loom
+    environment:
+      LOOM_TARGET: http://loom:8000
+      VERBOSE: 1
+
+networks:
+  loom:
