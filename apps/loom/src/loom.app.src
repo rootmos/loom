@@ -3,11 +3,10 @@
   {vsn, "0.1.0"},
   {registered, []},
   {mod, {loom_app, []}},
-  {applications,
-   [kernel, stdlib, cowboy]},
+  {applications, [kernel, stdlib, cowboy]},
+  {included_applications, [arweave]},
   {env, []},
   {modules, []},
-
   {licenses, []},
   {links, []}
  ]}.

@@ -32,7 +32,10 @@ do(State) ->
 fetch(Dir, State, App) ->
     case rebar_resource_v2:download(Dir, App, State) of
         ok -> case rebar_utils:sh("make gitmodules", [{cd, Dir}, use_stdout]) of
-                  {ok, _Output} -> write_app_file(App), {ok, State};
+                  {ok, _Output} ->
+                      ok = apply_patches(Dir),
+                      ok = write_app_file(App),
+                      {ok, State};
                   {error, Reason} -> {error, format_error(Reason)}
               end;
         {error, Reason} -> {error, format_error(Reason)}
@@ -42,10 +45,25 @@ write_app_file(App) ->
     AppFile = [{application, arweave,
                 [{vsn, rebar_app_info:original_vsn(App)},
                  {description, "Arweave"},
-                 {applications, [kernel, stdlib]}
+                 {applications, [kernel, stdlib]},
+                 {modules, []}
                 ]}],
     ok = file:write_file(rebar_app_info:app_file_src(App),
-                         io_lib:format("~p.~n", AppFile)).
+                         io_lib:format("~p.~n", AppFile)),
+    ok.
+
+apply_patches(Dir) ->
+    Path = code:lib_dir(rebar3_arweave, patches),
+    lists:foreach(
+      fun(Patch) -> ok = apply_patch(Dir, filename:join(Path, Patch)) end,
+      filelib:wildcard("*.patch", Path)),
+    ok.
+
+apply_patch(Dir, Patch) ->
+    rebar_api:info("Applying patch: ~s", [Patch]),
+    rebar_utils:sh(io_lib:format("git apply ~s", [Patch]),
+                   [{cd, Dir}, abort_on_error, use_stdout]),
+    ok.
 
 -spec format_error(any()) ->  iolist().
 format_error(Reason) ->

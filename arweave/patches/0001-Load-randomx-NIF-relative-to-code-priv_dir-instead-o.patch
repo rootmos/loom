@@ -1,0 +1,24 @@
+From a007d7138fe22119cfebe3b148079fbc5d030cea Mon Sep 17 00:00:00 2001
+From: Gustav Behm <me@rootmos.io>
+Date: Fri, 29 Nov 2019 13:29:50 +0100
+Subject: [PATCH] Load randomx NIF relative to code:priv_dir instead of
+ hard-coded value
+
+---
+ src/ar_mine_randomx.erl | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/src/ar_mine_randomx.erl b/src/ar_mine_randomx.erl
+index 40624b3..e446baf 100644
+--- a/src/ar_mine_randomx.erl
++++ b/src/ar_mine_randomx.erl
+@@ -82,4 +82,5 @@ release_state_nif(_State) ->
+ 	erlang:nif_error(nif_not_loaded).
+ 
+ init_nif() ->
+-	ok = erlang:load_nif("priv/arweave", 0).
++	Path = filename:join(code:priv_dir(arweave), "arweave"),
++	ok = erlang:load_nif(Path, 0).
+-- 
+2.24.0
+
