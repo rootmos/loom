@@ -4,7 +4,7 @@
   {registered, []},
   {mod, {loom_app, []}},
   {applications, [kernel, stdlib, cowboy]},
-  {included_applications, [arweave]},
+  {included_applications, [arweave, jiffy]},
   {env, []},
   {modules, []},
   {licenses, []},

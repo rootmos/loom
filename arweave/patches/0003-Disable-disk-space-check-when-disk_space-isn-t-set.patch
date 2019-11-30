@@ -1,0 +1,28 @@
+From 52543ace7d5e94ed7344e0b2efdda773a16b9e81 Mon Sep 17 00:00:00 2001
+From: Gustav Behm <me@rootmos.io>
+Date: Sat, 30 Nov 2019 14:38:20 +0100
+Subject: [PATCH] Disable disk space check when disk_space isn't set
+
+---
+ src/ar_storage.erl | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/src/ar_storage.erl b/src/ar_storage.erl
+index 2717927..7688257 100644
+--- a/src/ar_storage.erl
++++ b/src/ar_storage.erl
+@@ -389,7 +389,10 @@ lookup_tx_filename(ID) ->
+ 
+ % @doc Check that there is enough space to write Bytes bytes of data
+ enough_space(Bytes) ->
+-	(ar_meta_db:get(disk_space)) >= (Bytes + ar_meta_db:get(used_space)).
++    case ar_meta_db:get(disk_space) of
++        not_found -> true;
++        DiskSpace -> DiskSpace >= (Bytes + ar_meta_db:get(used_space))
++    end.
+ 
+ %% @doc Calculate the available space in bytes on the data directory disk.
+ calculate_disk_space() ->
+-- 
+2.24.0
+

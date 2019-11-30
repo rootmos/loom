@@ -15,6 +15,7 @@ init(_Args) ->
     ok = filelib:ensure_dir(Root),
     initialize_ar_meta_db(Root),
     initialize_ar_storage(),
+    initialize_randomx(),
     {ok, {}}.
 
 handle_call(_Msg, _From, State) -> {noreply, State}.
@@ -28,3 +29,6 @@ initialize_ar_meta_db(Root) ->
     ar_meta_db:put(transaction_blacklist_files, []),
     ar_meta_db:put(content_policy_files, []),
     ar_meta_db:put(data_dir, filename:join(Root, "data")).
+
+initialize_randomx() ->
+    _Pid = ar_randomx_state:start().
