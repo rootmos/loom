@@ -8,9 +8,20 @@ class Client:
         self.target = target or os.getenv("LOOM_TARGET")
         if self.target is None:
             raise ValueError("client target URL not specified")
+        self.arweave_base_url = f"{self.target}/arweave"
 
     def ping(self):
         rsp = requests.get(f"{self.target}/ping")
+        rsp.raise_for_status()
+        return rsp.json()
+
+    def info(self):
+        rsp = requests.get(f"{self.arweave_base_url}/info")
+        rsp.raise_for_status()
+        return rsp.json()
+
+    def block(self, indep_hash):
+        rsp = requests.get(f"{self.arweave_base_url}/block/hash/{indep_hash}")
         rsp.raise_for_status()
         return rsp.json()
 

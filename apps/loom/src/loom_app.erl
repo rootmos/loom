@@ -5,8 +5,10 @@
 -export([start/2, stop/1]).
 
 start(_StartType, _StartArgs) ->
-    Dispatch = cowboy_router:compile([{'_', [{"/ping", ping_h, []},
-                                             {"/stop", stop_h, []}]}]),
+    Dispatch = cowboy_router:compile(
+        [{'_', [{"/ping", ping_h, []},
+                {"/stop", stop_h, []},
+                {"/arweave/[...]", arweave_h, []}]}]),
     {ok, _} = cowboy:start_clear(http,
                                  [{port, 8000}],
                                  #{env => #{dispatch => Dispatch}}),

@@ -8,15 +8,16 @@ start_link() ->
     supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 init(_Args) ->
+    Port = 9000,
     SupFlags = #{strategy => one_for_all, intensity => 0, period => 1},
     ChildSpecs = [
         #{id => controller,
-          start => {controller, start_link, []},
+          start => {controller, start_link, [Port]},
           restart => permanent,
           shutdown => 5000
          },
-        #{id => bridge,
-          start => {ar_bridge, start_link, [[[], [], 9000]]},
+        #{id => bridge_sup,
+          start => {bridge_sup, start_link, [Port]},
           restart => permanent,
           shutdown => 5000
          },
