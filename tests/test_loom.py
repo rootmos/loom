@@ -23,3 +23,9 @@ class LoomTests(unittest.TestCase):
         time.sleep(1.0)
         h1 = client.info()["current"]
         self.assertNotEqual(h0, h1)
+
+    def test_faucet(self):
+        fs = client.faucets()
+        self.assertNotEqual(fs, [])
+        for f in fs:
+            self.assertGreater(client.balance(f), 0)

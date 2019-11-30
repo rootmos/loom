@@ -1,13 +1,13 @@
 -module(controller).
 -behaviour(gen_server).
 
--export([start_link/1]).
+-export([start_link/0]).
 -export([init/1, handle_call/3, handle_cast/2]).
 
-start_link(Port) ->
-    gen_server:start_link({local, ?MODULE}, ?MODULE, [Port], []).
+start_link() ->
+    gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
-init(Port) ->
+init(_Args) ->
     Salt = integer_to_binary(rand:uniform(16#ffffff), 16),
     {ok, CWD} = file:get_cwd(),
     Root = filename:join(CWD, io_lib:format("root-~s", [Salt])),

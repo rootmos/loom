@@ -26,9 +26,19 @@ class Client:
         rsp.raise_for_status()
         return rsp.json()
 
+    def balance(self, address):
+        rsp = requests.get(f"{self.arweave_base_url}/wallet/{address}/balance")
+        rsp.raise_for_status()
+        return rsp.json()
+
     def mine(self):
         rsp = requests.post(f"{self.loom_base_url}/mine")
         rsp.raise_for_status()
+
+    def faucets(self):
+        rsp = requests.get(f"{self.loom_base_url}/faucet")
+        rsp.raise_for_status()
+        return rsp.json()
 
     def stop(self):
         rsp = requests.post(f"{self.loom_base_url}/stop")
@@ -45,3 +55,4 @@ class Client:
                     time.sleep(1)
 
         go(lambda: self.ping())
+        go(lambda: self.info())

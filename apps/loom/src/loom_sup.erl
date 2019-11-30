@@ -2,17 +2,21 @@
 
 -behaviour(supervisor).
 
--export([start_link/0, init/1]).
+-export([start_link/1, init/1]).
 
-start_link() ->
-    supervisor:start_link({local, ?MODULE}, ?MODULE, []).
+start_link(Config) ->
+    supervisor:start_link({local, ?MODULE}, ?MODULE, Config).
 
-init(_Args) ->
-    Port = 9000,
+init(#{port := Port, faucets := Faucets}) ->
     SupFlags = #{strategy => one_for_all, intensity => 0, period => 1},
     ChildSpecs = [
         #{id => controller,
-          start => {controller, start_link, [Port]},
+          start => {controller, start_link, []},
+          restart => permanent,
+          shutdown => 5000
+         },
+        #{id => faucets,
+          start => {faucets, start_link, [Faucets]},
           restart => permanent,
           shutdown => 5000
          },
@@ -22,7 +26,7 @@ init(_Args) ->
           shutdown => 5000
          },
         #{id => node_sup,
-          start => {node_sup, start_link, []},
+          start => {node_sup, start_link, [Faucets]},
           restart => permanent,
           shutdown => 5000,
           type => supervisor

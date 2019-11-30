@@ -1,15 +1,17 @@
 -module(node_sup).
 -behaviour(supervisor).
 
--export([start_link/0, init/1]).
+-export([start_link/1, init/1]).
 
-start_link() -> supervisor:start_link(node_sup, []).
+start_link(Faucets) -> supervisor:start_link(node_sup, Faucets).
 
-init(_Args) ->
+init(Faucets) ->
     DataDir = ar_meta_db:get(data_dir),
     ok = filelib:ensure_dir(filename:join(DataDir, "genesis_txs")),
     Diff = 1,
-    NodeArgs = [[], ar_weave:init([], Diff), 0, unclaimed, false,
+    GenesisWallets = [ {A, 1000*1000000000000, <<>>} ||
+                       #{address := A} <- Faucets ],
+    NodeArgs = [[], ar_weave:init(GenesisWallets, Diff), 0, unclaimed, false,
                Diff, os:system_time(seconds)],
     SupFlags = #{strategy => one_for_one, intensity => 1, period => 5},
     ChildSpecs = [#{id => ar_node,
