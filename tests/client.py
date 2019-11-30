@@ -8,10 +8,11 @@ class Client:
         self.target = target or os.getenv("LOOM_TARGET")
         if self.target is None:
             raise ValueError("client target URL not specified")
+        self.loom_base_url = f"{self.target}/loom"
         self.arweave_base_url = f"{self.target}/arweave"
 
     def ping(self):
-        rsp = requests.get(f"{self.target}/ping")
+        rsp = requests.get(f"{self.loom_base_url}/ping")
         rsp.raise_for_status()
         return rsp.json()
 
@@ -25,8 +26,12 @@ class Client:
         rsp.raise_for_status()
         return rsp.json()
 
+    def mine(self):
+        rsp = requests.post(f"{self.loom_base_url}/mine")
+        rsp.raise_for_status()
+
     def stop(self):
-        rsp = requests.post(f"{self.target}/stop")
+        rsp = requests.post(f"{self.loom_base_url}/stop")
         rsp.raise_for_status()
 
     def wait_for_service(self):

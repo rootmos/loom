@@ -6,8 +6,9 @@
 
 start(_StartType, _StartArgs) ->
     Dispatch = cowboy_router:compile(
-        [{'_', [{"/ping", ping_h, []},
-                {"/stop", stop_h, []},
+        [{'_', [{"/loom/ping", ping_h, []},
+                {"/loom/stop", stop_h, []},
+                {"/loom/mine", mine_h, []},
                 {"/arweave/[...]", arweave_h, []}]}]),
     {ok, _} = cowboy:start_clear(http,
                                  [{port, 8000}],
