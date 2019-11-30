@@ -4,6 +4,8 @@ services:
     build: .
     networks:
       - loom
+    environment:
+      PORT: 8000
   tests:
     build: tests
     command: wait test stop

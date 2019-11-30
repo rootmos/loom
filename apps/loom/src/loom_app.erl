@@ -11,11 +11,11 @@ start(_StartType, _StartArgs) ->
                 {"/loom/mine", mine_h, []},
                 {"/loom/faucet", faucet_h, []},
                 {"/arweave/[...]", arweave_h, []}]}]),
-    {ok, _} = cowboy:start_clear(http,
-                                 [{port, 8000}],
+    Port = list_to_integer(os:getenv("PORT", "8000")),
+    {ok, _} = cowboy:start_clear(http, [{port, Port}],
                                  #{env => #{dispatch => Dispatch}}),
     Faucets = [ faucets:new(I) || I <- lists:seq(1, 10)],
-    loom_sup:start_link(#{port => 9000, faucets => Faucets}).
+    loom_sup:start_link(#{port => Port, faucets => Faucets}).
 
 stop(_State) ->
     ok = cowboy:stop_listener(http).
