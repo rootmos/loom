@@ -14,11 +14,17 @@ $(REBAR):
 clean:
 	rm -rf _build
 
+DOCKER ?= docker
 DOCKER_COMPOSE ?= docker-compose
+export DOCKER_IMAGE ?= rootmos/loom:$(shell git rev-parse HEAD | head -c7)
 
 test-compose:
 	$(DOCKER_COMPOSE) build
 	$(DOCKER_COMPOSE) up --detach --force-recreate loom
 	$(DOCKER_COMPOSE) run tests
 
-.PHONY: run release clean test-compose
+publish:
+	$(DOCKER) push $(DOCKER_IMAGE)
+
+.PHONY: run release clean
+.PHONY: test-compose publish

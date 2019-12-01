@@ -5,3 +5,7 @@ services:
 
 script:
   - make test-compose
+
+after_success:
+  - docker login --username rootmos --password-stdin <<< "$DOCKER_HUB_PASSWORD"
+  - make publish
