@@ -26,6 +26,11 @@ class Client:
         rsp.raise_for_status()
         return rsp.json()
 
+    def tx(self, txid):
+        rsp = requests.get(f"{self.arweave_base_url}/tx/{txid}")
+        rsp.raise_for_status()
+        return rsp.json()
+
     def balance(self, address):
         rsp = requests.get(f"{self.arweave_base_url}/wallet/{address}/balance")
         rsp.raise_for_status()
@@ -39,6 +44,12 @@ class Client:
         rsp = requests.get(f"{self.loom_base_url}/faucet")
         rsp.raise_for_status()
         return rsp.json()
+
+    def faucet(self, beneficiary, quantity):
+        body = { "beneficiary": beneficiary, "quantity": quantity }
+        rsp = requests.post(f"{self.loom_base_url}/faucet", json=body)
+        rsp.raise_for_status()
+        return rsp.json()["tx_id"]
 
     def stop(self):
         rsp = requests.post(f"{self.loom_base_url}/stop")
