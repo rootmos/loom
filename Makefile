@@ -16,7 +16,8 @@ clean:
 
 DOCKER ?= docker
 DOCKER_COMPOSE ?= docker-compose
-export DOCKER_IMAGE ?= rootmos/loom:$(shell git rev-parse HEAD | head -c7)
+DOCKER_REPO ?= rootmos/loom
+export DOCKER_IMAGE ?= $(DOCKER_REPO):$(shell git rev-parse HEAD | head -c7)
 
 test-compose:
 	$(DOCKER_COMPOSE) build
@@ -25,6 +26,10 @@ test-compose:
 
 publish:
 	$(DOCKER) push $(DOCKER_IMAGE)
+ifeq ($(TRAVIS_BRANCH),master)
+	$(DOCKER) tag $(DOCKER_IMAGE) $(DOCKER_REPO):latest
+	$(DOCKER) push $(DOCKER_REPO):latest
+endif
 
 .PHONY: run release clean
 .PHONY: test-compose publish
