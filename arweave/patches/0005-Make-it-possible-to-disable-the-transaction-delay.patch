@@ -1,0 +1,169 @@
+From c6741d31d963a9727d1f727be569d9e4798a6148 Mon Sep 17 00:00:00 2001
+From: Gustav Behm <me@rootmos.io>
+Date: Sun, 1 Dec 2019 10:07:28 +0100
+Subject: [PATCH] Make it possible to disable the transaction delay
+
+---
+ src/ar.erl             | 36 +++++++++++++++++-------------------
+ src/ar_node.erl        | 29 +++++++++++++++++++++++++----
+ src/ar_node_worker.erl | 21 +++++++++++++--------
+ 3 files changed, 55 insertions(+), 31 deletions(-)
+
+diff --git a/src/ar.erl b/src/ar.erl
+index 656cb29..2db9089 100644
+--- a/src/ar.erl
++++ b/src/ar.erl
+@@ -366,25 +366,23 @@ start(
+ 	end,
+ 	ar_randomx_state:start(),
+ 	{ok, Supervisor} = start_link(
+-		[
+-			[
+-				Peers,
+-				case BHL of
+-					undefined ->
+-						if Init -> ar_weave:init(ar_util:genesis_wallets(), Diff);
+-						true -> not_joined
+-						end;
+-					_ ->
+-						ar_storage:read_block_hash_list(BHL)
+-				end,
+-				0,
+-				MiningAddress,
+-				AutoJoin,
+-				Diff,
+-				os:system_time(seconds)
+-			]
+-		]
+-	),
++						 [#{ peers => Peers,
++							 block_hash_list =>
++							 case BHL of
++								 undefined ->
++									 if Init -> ar_weave:init(ar_util:genesis_wallets(), Diff);
++										true -> not_joined
++									 end;
++								 _ ->
++									 ar_storage:read_block_hash_list(BHL)
++							 end,
++							 mining_delay => 0,
++							 reward_address => MiningAddress,
++							 auto_join => AutoJoin,
++							 diff => Diff,
++							 last_retarget => os:system_time(seconds)
++						   }]
++						),
+ 	Node = whereis(http_entrypoint_node),
+ 	%% Start a bridge, add it to the node's peer list.
+ 	{ok, Bridge} = supervisor:start_child(
+diff --git a/src/ar_node.erl b/src/ar_node.erl
+index b5f35bf..5225466 100644
+--- a/src/ar_node.erl
++++ b/src/ar_node.erl
+@@ -6,6 +6,7 @@
+ 
+ -export([start_link/1]).
+ -export([start/0, start/1, start/2, start/3, start/4, start/5, start/6, start/7]).
++-export([start_with_config/1]).
+ -export([stop/1]).
+ 
+ -export([get_blocks/1, get_block/3]).
+@@ -143,8 +144,27 @@ start(Peers, Bs = [B | _], MiningDelay, RewardAddr, AutoJoin, Diff, LastRetarget
+ start(Peers, B, MiningDelay, RewardAddr, AutoJoin, Diff, LastRetarget) when ?IS_BLOCK(B) ->
+ 	start(Peers, B#block.hash_list, MiningDelay, RewardAddr, AutoJoin, Diff, LastRetarget);
+ start(Peers, HashList, MiningDelay, RewardAddr, AutoJoin, Diff, LastRetarget) ->
+-	% Spawns the node server process.
+-	PID = spawn(
++	{ok, Pid} = start_with_config(#{ peers => Peers,
++									 block_hash_list => HashList,
++									 mining_delay => MiningDelay,
++									 reward_address => RewardAddr,
++									 auto_join => AutoJoin,
++									 diff => Diff,
++									 last_retarget => LastRetarget,
++									 transaction_delay => based_on_size
++								   }),
++	Pid.
++
++start_with_config(#{ peers := Peers,
++					 block_hash_list := HashList,
++					 mining_delay := MiningDelay,
++					 reward_address := RewardAddr,
++					 auto_join := AutoJoin,
++					 diff := Diff,
++					 last_retarget := LastRetarget,
++					 transaction_delay := TransactionDelay
++				   }) ->
++	PID = spawn_link(
+ 		fun() ->
+ 			% Join the node to the network.
+ 			case {HashList, AutoJoin} of
+@@ -195,14 +215,15 @@ start(Peers, HashList, MiningDelay, RewardAddr, AutoJoin, Diff, LastRetarget) ->
+ 				{diff, Diff},
+ 				{last_retarget, LastRetarget},
+ 				{weave_size, WeaveSize},
+-				{block_txs_pairs, create_block_txs_pairs(HashList)}
++				{block_txs_pairs, create_block_txs_pairs(HashList)},
++				{transaction_delay, TransactionDelay}
+ 			]),
+ 
+ 			server(SPid, WPid, queue:new())
+ 		end
+ 	),
+ 	ar_http_iface_server:reregister(http_entrypoint_node, PID),
+-	PID.
++	{ok, PID}.
+ 
+ create_block_txs_pairs(not_joined) ->
+ 	[];
+diff --git a/src/ar_node_worker.erl b/src/ar_node_worker.erl
+index 1407d30..263a58f 100644
+--- a/src/ar_node_worker.erl
++++ b/src/ar_node_worker.erl
+@@ -92,7 +92,7 @@ handle(SPid, {gossip_message, Msg}) ->
+ 	handle_gossip(SPid, ar_gossip:recv(GS, Msg));
+ handle(SPid, {add_tx, TX}) ->
+ 	{ok, StateIn} =
+-		ar_node_state:lookup(SPid, [gossip, node, txs, waiting_txs, height]),
++		ar_node_state:lookup(SPid, [gossip, node, waiting_txs, transaction_delay]),
+ 	case add_tx(StateIn, TX, maps:get(gossip, StateIn)) of
+ 		{ok, StateOut} ->
+ 			ar_node_state:update(SPid, StateOut);
+@@ -217,7 +217,7 @@ handle_gossip(SPid, {NewGS, {new_block, Peer, _Height, BShadow, _BDS, Recall}})
+ 	end,
+ 	{ok, process_new_block};
+ handle_gossip(SPid, {NewGS, {add_tx, TX}}) ->
+-	{ok, StateIn} = ar_node_state:lookup(SPid, [node, txs, waiting_txs, height]),
++	{ok, StateIn} = ar_node_state:lookup(SPid, [node, waiting_txs, transaction_delay]),
+ 	case add_tx(StateIn, TX, NewGS) of
+ 		{ok, StateOut} ->
+ 			ar_node_state:update(SPid, StateOut);
+@@ -251,14 +251,19 @@ handle_gossip(SPid, {NewGS, UnhandledMsg}) ->
+ add_tx(StateIn, TX, GS) ->
+ 	#{
+ 		node := Node,
+-		waiting_txs := WaitingTXs
++		waiting_txs := WaitingTXs,
++		transaction_delay := TransactionDelay
+ 	} = StateIn,
+ 	{NewGS, _} = ar_gossip:send(GS, {add_tx, TX}),
+-	timer:send_after(
+-		ar_node_utils:calculate_delay(byte_size(TX#tx.data)),
+-		Node,
+-		{add_tx_to_mining_pool, TX}
+-	),
++	case TransactionDelay of
++		based_on_size ->
++			timer:send_after(
++			  ar_node_utils:calculate_delay(byte_size(TX#tx.data)),
++			  Node,
++			  {add_tx_to_mining_pool, TX}
++			 );
++		no_delay -> Node ! {add_tx_to_mining_pool, TX}
++	end,
+ 	{ok, [
+ 		{waiting_txs, WaitingTXs ++ [TX]},
+ 		{gossip, NewGS}
+-- 
+2.24.0
+

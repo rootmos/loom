@@ -37,8 +37,8 @@ class LoomTests(unittest.TestCase):
     def test_faucet(self):
         a, q = fresh.address(), fresh.quantity()
         txid = client.faucet(a, q)
+        time.sleep(1.0)
 
-        time.sleep(40)
         client.mine()
         time.sleep(1.0)
 
