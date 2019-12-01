@@ -5,6 +5,11 @@ Run a local development [Arweave](https://www.arweave.org/) blockchain
 with faucets and on-demand mining.
 
 ## Usage
+Images are available on the [Docker Hub](https://hub.docker.com/r/rootmos/loom):
+```shell
+docker pull rootmos/loom
+docker run --rm --publish 8000:8000 rootmos/loom
+```
 
 ## API
 * `POST /loom/mine` triggers the mining of a new block
