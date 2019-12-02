@@ -4,6 +4,7 @@
 -export([start_link/1]).
 -export([list/0, new/1, send/2]).
 -export([init/1, handle_call/3, handle_cast/2]).
+-export([confirmed_transaction_callback/2]).
 
 -include_lib("arweave/src/ar.hrl").
 
@@ -19,7 +20,7 @@ send(Beneficiary, Quantity) ->
 handle_call(list, _From, Faucets) ->
     As = [ A || #{address := A} <- Faucets],
     {reply, As, Faucets};
-handle_call({send, Beneficiary, Quantity}, _From, Faucets) ->
+handle_call({send, Beneficiary, Quantity}, From, Faucets) ->
     #{private_key := Priv, public_key := Pub, address := A} = choose(Faucets),
     Reward = ar_tx:calculate_min_tx_cost(
                0,
@@ -32,9 +33,13 @@ handle_call({send, Beneficiary, Quantity}, _From, Faucets) ->
     {ok, LastTx} = ar_node:get_last_tx(loom:node(), A),
     TX = ar_tx:new(Beneficiary, Reward, Quantity, LastTx),
     STX = ar_tx:sign(TX, Priv, Pub),
-    ar_node:add_tx(loom:node(), STX),
-    {reply, STX#tx.id, Faucets};
+    ok = monitor:wait_for_tx(STX#tx.id, ?MODULE, From),
+    ok = ar_node:add_tx(loom:node(), STX),
+    {noreply, Faucets};
 handle_call(_Msg, _From, State) -> {noreply, State}.
+
+confirmed_transaction_callback(TX, From) ->
+    gen_server:reply(From, TX#tx.id).
 
 handle_cast(_Msg, State) -> {noreply, State}.
 

@@ -38,8 +38,6 @@ class LoomTests(unittest.TestCase):
         a, q = fresh.address(), fresh.quantity()
         txid = client.faucet(a, q)
 
-        client.mine()
-
         self.assertEqual(client.balance(a), q)
         tx = client.tx(txid)
         self.assertEqual(tx["id"], txid)
