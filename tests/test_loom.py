@@ -20,9 +20,9 @@ class LoomTests(unittest.TestCase):
 
     def test_mine(self):
         h0 = client.info()["current"]
-        client.mine()
-        time.sleep(1.0)
+        b = client.mine()
         h1 = client.info()["current"]
+        self.assertEqual(b["indep_hash"], h1)
         self.assertNotEqual(h0, h1)
 
     def test_faucets(self):
@@ -37,10 +37,8 @@ class LoomTests(unittest.TestCase):
     def test_faucet(self):
         a, q = fresh.address(), fresh.quantity()
         txid = client.faucet(a, q)
-        time.sleep(1.0)
 
         client.mine()
-        time.sleep(1.0)
 
         self.assertEqual(client.balance(a), q)
         tx = client.tx(txid)

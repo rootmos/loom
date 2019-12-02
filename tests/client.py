@@ -39,6 +39,7 @@ class Client:
     def mine(self):
         rsp = requests.post(f"{self.loom_base_url}/mine")
         rsp.raise_for_status()
+        return rsp.json()
 
     def faucets(self):
         rsp = requests.get(f"{self.loom_base_url}/faucet")

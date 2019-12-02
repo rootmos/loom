@@ -30,6 +30,12 @@ init(#{port := Port, faucets := Faucets}) ->
           restart => permanent,
           shutdown => 5000,
           type => supervisor
+         },
+        #{id => monitor,
+          start => {monitor, start_link, []},
+          restart => permanent,
+          shutdown => 5000,
+          type => worker
          }
     ],
     {ok, {SupFlags, ChildSpecs}}.

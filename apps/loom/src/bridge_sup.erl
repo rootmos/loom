@@ -5,9 +5,10 @@
 
 start_link(Port) ->
     {ok, Sup} = supervisor:start_link(?MODULE, [Port]),
+    Node = whereis(http_entrypoint_node),
     {ok, Pid} = supervisor:start_child(Sup,
         #{id => bridge,
-          start => {ar_bridge, start_link, [[[], [], Port]]},
+          start => {ar_bridge, start_link, [[[], [Node], Port]]},
           restart => permanent,
           shutdown => 5000
          }
