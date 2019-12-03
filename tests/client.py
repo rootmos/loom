@@ -31,8 +31,26 @@ class Client:
         rsp.raise_for_status()
         return rsp.json()
 
+    def submit(self, tx):
+        rsp = requests.post(f"{self.arweave_base_url}/tx", json=tx)
+        rsp.raise_for_status()
+
     def balance(self, address):
         rsp = requests.get(f"{self.arweave_base_url}/wallet/{address}/balance")
+        rsp.raise_for_status()
+        return rsp.json()
+
+    def last_tx(self, address):
+        rsp = requests.get(f"{self.arweave_base_url}/wallet/{address}/last_tx")
+        rsp.raise_for_status()
+        return str(rsp.content, "UTF-8")
+
+    def reward(self, target=None, data=None):
+        size = len(data) if data is not None else 0
+        if target is not None:
+            rsp = requests.get(f"{self.arweave_base_url}/price/{size}/{target}")
+        else:
+            rsp = requests.get(f"{self.arweave_base_url}/price/{size}")
         rsp.raise_for_status()
         return rsp.json()
 
