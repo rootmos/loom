@@ -7,7 +7,7 @@
 start_link(Config) ->
     supervisor:start_link({local, ?MODULE}, ?MODULE, Config).
 
-init(#{port := Port, faucets := Faucets}) ->
+init(#{port := Port, faucets := Faucets, dispatch := Dispatch}) ->
     SupFlags = #{strategy => one_for_all, intensity => 0, period => 1},
     ChildSpecs = [
         #{id => controller,
@@ -36,6 +36,14 @@ init(#{port := Port, faucets := Faucets}) ->
           restart => permanent,
           shutdown => 5000,
           type => worker
+         },
+        #{id => http_interface,
+          start => {cowboy,
+                    start_clear,
+                    [http, [{port, Port}], #{env => #{dispatch => Dispatch}}]},
+          restart => permanent,
+          shutdown => 5000,
+          type => supervisor
          }
     ],
     {ok, {SupFlags, ChildSpecs}}.

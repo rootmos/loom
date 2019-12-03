@@ -1,0 +1,24 @@
+From c6619c5553b2d22107f9d02f64fa9a36b437051e Mon Sep 17 00:00:00 2001
+From: Gustav Behm <me@rootmos.io>
+Date: Tue, 3 Dec 2019 11:04:51 +0100
+Subject: [PATCH] Export ar_http_body_middleware:with_body_req_field
+
+---
+ src/ar_http_body_middleware.erl | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/ar_http_body_middleware.erl b/src/ar_http_body_middleware.erl
+index 424c675..3d6a97c 100644
+--- a/src/ar_http_body_middleware.erl
++++ b/src/ar_http_body_middleware.erl
+@@ -3,6 +3,7 @@
+ -include("ar.hrl").
+ -include("ar_http_req.hrl").
+ -export([execute/2]).
++-export([with_body_req_field/2]).
+ 
+ %%%===================================================================
+ %%% Cowboy middleware callback.
+-- 
+2.24.0
+
