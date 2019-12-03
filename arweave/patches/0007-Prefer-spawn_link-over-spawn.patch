@@ -1,0 +1,39 @@
+From a2c07f83c6bdbc72d496e46ac0a316cf04c4b2d1 Mon Sep 17 00:00:00 2001
+From: Gustav Behm <me@rootmos.io>
+Date: Tue, 3 Dec 2019 12:47:21 +0100
+Subject: [PATCH] Prefer spawn_link over spawn
+
+---
+ src/adt_simple.erl | 2 +-
+ src/ar_bridge.erl  | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/adt_simple.erl b/src/adt_simple.erl
+index 6098132..e841d71 100644
+--- a/src/adt_simple.erl
++++ b/src/adt_simple.erl
+@@ -40,7 +40,7 @@ start(CallbackMod) ->
+ start(CallbackMod, AppState) ->
+ 	start(CallbackMod, AppState, []).
+ start(CallbackMod, AppState, Peers) ->
+-	spawn(
++	spawn_link(
+ 		fun() ->
+ 			server(
+ 				#state {
+diff --git a/src/ar_bridge.erl b/src/ar_bridge.erl
+index fc00c05..88f2c35 100644
+--- a/src/ar_bridge.erl
++++ b/src/ar_bridge.erl
+@@ -36,7 +36,7 @@ start(ExtPeers, IntPeers, Port) ->
+ 	),
+ 	receive after 250 -> ok end,
+     PID =
+-		spawn(
++		spawn_link(
+ 			fun() ->
+ 				server(
+ 					#state {
+-- 
+2.24.0
+

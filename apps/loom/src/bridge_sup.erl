@@ -1,20 +1,18 @@
 -module(bridge_sup).
--behaviour(supervisor).
+-behaviour(gen_server).
 
--export([start_link/1, init/1]).
+-export([start_link/1]).
+-export([init/1, handle_call/3, handle_cast/2]).
 
-start_link(Port) ->
-    {ok, Sup} = supervisor:start_link(?MODULE, [Port]),
-    Node = whereis(http_entrypoint_node),
-    {ok, Pid} = supervisor:start_child(Sup,
-        #{id => bridge,
-          start => {ar_bridge, start_link, [[[], [Node], Port]]},
-          restart => permanent,
-          shutdown => 5000
-         }
-    ),
+start_link(Args) ->
+    gen_server:start_link({local, ?MODULE}, ?MODULE, [Args], []).
+
+init(Port) ->
+    Pid = ar_bridge:start([], [loom:node()], Port),
+    ar_node:add_peers(loom:node(), Pid),
     erlang:register(http_bridge_node, Pid),
-    {ok, Sup}.
+    error_logger:info_report([{bridge, Pid}]),
+    {ok, {}}.
 
-init(_Args) ->
-    {ok, {#{strategy => one_for_one, intensity => 1, period => 5}, []}}.
+handle_call(_Msg, _From, State) -> {noreply, State}.
+handle_cast(_Msg, State) -> {noreply, State}.

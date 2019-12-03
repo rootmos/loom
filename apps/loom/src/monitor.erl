@@ -15,11 +15,9 @@ wait_for_tx(TxId, Mod, AppData) ->
     gen_server:call(?MODULE, {tx_id, TxId, Mod, AppData}).
 
 init(_Args) ->
-    Pid = adt_simple:start(?MODULE, []),
-    Node = loom:node(),
-    ar_node:add_peers(Node, Pid),
-    link(Pid),
-    {ok, #{node => Node, block_requesters => [], tx_requesters => #{}}}.
+    Pid = adt_simple:start(?MODULE, [loom:node()]),
+    ar_node:add_peers(loom:node(), Pid),
+    {ok, #{block_requesters => [], tx_requesters => #{}}}.
 
 handle_call(block, From, #{block_requesters := BRs} = State) ->
     {noreply, State#{block_requesters => [From | BRs] }};
@@ -30,14 +28,16 @@ handle_call({tx_id, TxId, Mod, AppData}, _From, #{tx_requesters := M} = State) -
                              fun(TXRs) -> [{Mod, AppData} | TXRs] end,
                              [{Mod, AppData}],
                              M)}};
-handle_call(Msg, _From, State) ->
+handle_call(_Msg, _From, State) ->
     {noreply, State}.
 
 handle_cast({block, Block}, #{block_requesters := BRs} = State) ->
     ok = lists:foreach(fun(BR) -> gen_server:reply(BR, Block) end, BRs),
     {noreply, State#{block_requesters => [] }};
-handle_cast({tx, _TX}, #{node := Node} = State) ->
-    ar_node:mine(Node),
+handle_cast({tx, TX}, State) ->
+    error_logger:info_report([{auto_mining_triggered,
+                               ar_util:encode(TX#tx.id)}]),
+    ar_node:mine(loom:node()),
     {noreply, State};
 handle_cast({confirmed_tx, TX}, #{tx_requesters := TXRs} = State) ->
     ok = lists:foreach(fun({Mod, AppData}) ->

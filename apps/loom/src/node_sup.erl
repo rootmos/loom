@@ -1,11 +1,13 @@
 -module(node_sup).
--behaviour(supervisor).
+-behaviour(gen_server).
 
--export([start_link/1, init/1]).
+-export([start_link/1]).
+-export([init/1, handle_call/3, handle_cast/2]).
 
 -include_lib("arweave/src/ar.hrl").
 
-start_link(Faucets) -> supervisor:start_link(node_sup, Faucets).
+start_link(Args) ->
+    gen_server:start_link({local, ?MODULE}, ?MODULE, Args, []).
 
 init(Faucets) ->
     DataDir = ar_meta_db:get(data_dir),
@@ -25,10 +27,9 @@ init(Faucets) ->
                     last_retarget => os:system_time(seconds),
                     transaction_delay => no_delay
                   },
-    SupFlags = #{strategy => one_for_one, intensity => 1, period => 5},
-    ChildSpecs = [#{id => ar_node,
-                    start => {ar_node, start_with_config, [NodeConfig]},
-                    restart => permanent,
-                    shutdown => brutal_kill,
-                    type => worker}],
-    {ok, {SupFlags, ChildSpecs}}.
+    {ok, Pid} = ar_node:start_with_config(NodeConfig),
+    error_logger:info_report([{node, Pid}]),
+    {ok, {}}.
+
+handle_call(_Msg, _From, State) -> {noreply, State}.
+handle_cast(_Msg, State) -> {noreply, State}.

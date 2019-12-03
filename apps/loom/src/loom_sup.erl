@@ -20,16 +20,16 @@ init(#{port := Port, faucets := Faucets, dispatch := Dispatch}) ->
           restart => permanent,
           shutdown => 5000
          },
-        #{id => bridge_sup,
-          start => {bridge_sup, start_link, [Port]},
-          restart => permanent,
-          shutdown => 5000
-         },
         #{id => node_sup,
           start => {node_sup, start_link, [Faucets]},
           restart => permanent,
           shutdown => 5000,
           type => supervisor
+         },
+        #{id => bridge_sup,
+          start => {bridge_sup, start_link, [Port]},
+          restart => permanent,
+          shutdown => 5000
          },
         #{id => monitor,
           start => {monitor, start_link, []},
