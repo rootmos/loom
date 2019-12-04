@@ -10,7 +10,7 @@ init(State) ->
             {module, ?MODULE},
             {bare, true},
             {deps, []},
-            {example, "rebar3 arweave get-deps"},
+            {example, "rebar3 arweave install_deps"},
             {opts, []},
             {short_desc, "Fetch Arweave source"},
             {desc, "Fetch Arweave source"}

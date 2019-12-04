@@ -4,7 +4,6 @@ run:
 	_build/default/rel/loom/bin/loom foreground
 
 release: | $(REBAR)
-	$(REBAR) arweave compile
 	$(REBAR) release
 
 $(REBAR):

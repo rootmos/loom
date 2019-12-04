@@ -9,7 +9,6 @@ init(State) ->
             {namespace, arweave},
             {module, ?MODULE},
             {bare, true},
-            {deps, [{arweave, install_deps}]},
             {example, "rebar3 arweave compile"},
             {opts, []},
             {short_desc, "Compile Arweave source"},
@@ -19,13 +18,14 @@ init(State) ->
     {ok, State1}.
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
-do(State) ->
-    App0 = rebar_state:get(State, arweave_app),
+do(State0) ->
+    {ok, State1} = arweave_prv_deps:do(State0),
+    App0 = rebar_state:get(State0, arweave_app),
     AppDir = rebar_app_info:dir(App0),
     rebar_api:info("Compiling arweave (~s)", [rebar_app_info:original_vsn(App0)]),
     rebar_utils:sh("make compile_prod build_arweave",
                    [{cd, AppDir}, abort_on_error, use_stdout]),
-    {ok, State}.
+    {ok, State1}.
 
 -spec format_error(any()) ->  iolist().
 format_error(Reason) ->
