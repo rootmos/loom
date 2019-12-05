@@ -13,11 +13,13 @@ docker run --rm --publish 8000:8000 rootmos/loom
 
 ## API
 * `POST /loom/mine` triggers the mining of a new block
-  (TODO: block until a new block is actually mined)
+  - Responds with the mined block
+* `GET /loom/wait/:tx_id` waits for the transaction to get mined
+  - Responds with the transaction
 * `POST /loom/faucet`
-  - Request:
+  - Example request:
     `{"beneficiary": "tQYrTlkGy6voW2sIFVnRspzV1ELl2uNueICftPyplY8", "quantity": 1000000000000}`
-  - Response:
+  - Example response:
     `{"tx_id": "P7wXSetOmrlKpQCm_koGYa8pzRhULunmwANG63aVaTg"}`
 * `GET /loom/faucet` returns a list of faucets the loom is using
 * `POST /loom/stop` stops the loom and the Arweave node
