@@ -1,5 +1,6 @@
 # loom
 [![Build Status](https://travis-ci.org/rootmos/loom.svg?branch=master)](https://travis-ci.org/rootmos/loom)
+[![Docker Pulls](https://img.shields.io/docker/pulls/rootmos/loom)](https://hub.docker.com/r/rootmos/loom)
 
 Run a local development [Arweave](https://www.arweave.org/) blockchain
 with faucets and on-demand mining.
