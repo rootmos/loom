@@ -10,6 +10,9 @@ $(REBAR):
 	wget -O"$@" https://s3.amazonaws.com/rebar3/rebar3
 	chmod +x "$@"
 
+test:
+	$(MAKE) --keep-going -C tests wait test stop
+
 clean:
 	rm -rf _build
 
@@ -34,5 +37,5 @@ ifeq ($(TRAVIS_BRANCH),master)
 	$(DOCKER) push $(DOCKER_REPO):latest
 endif
 
-.PHONY: run release clean
+.PHONY: run release clean test
 .PHONY: test-compose publish
