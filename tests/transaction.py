@@ -37,6 +37,7 @@ def new(last_tx, target=None, quantity=None, reward=None, data=None):
         "target": target if target is not None else "",
         "data": b64e(data),
         "quantity": str(quantity),
+        "tags": [],
     }
 
     if reward: tx["reward"] = str(reward)

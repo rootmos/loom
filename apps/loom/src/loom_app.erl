@@ -9,6 +9,7 @@ start(_StartType, _StartArgs) ->
         [{'_', [{"/loom/ping", ping_h, []},
                 {"/loom/stop", stop_h, []},
                 {"/loom/mine", mine_h, []},
+                {"/loom/wait/:tx_id", wait_h, []},
                 {"/loom/faucet", faucet_h, []},
                 {"/arweave/[...]", arweave_h, []}]}]),
     Port = list_to_integer(os:getenv("PORT", "8000")),

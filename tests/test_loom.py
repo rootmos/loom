@@ -1,5 +1,4 @@
 import unittest
-import time
 
 from . import fresh, b64d, wallet, transaction
 from .client import Client
@@ -58,7 +57,7 @@ class LoomTests(unittest.TestCase):
         self.assertEqual(client.balance(a0), q + r)
         self.assertEqual(client.balance(a1), 0)
         client.submit(tx)
-        time.sleep(1)
+        self.assertDictEqual(tx, client.wait(tx["id"]))
         self.assertEqual(client.last_tx(a0), tx["id"])
         self.assertEqual(client.balance(a0), 0)
         self.assertEqual(client.balance(a1), q)

@@ -70,6 +70,11 @@ class Client:
         rsp.raise_for_status()
         return rsp.json()["tx_id"]
 
+    def wait(self, tx_id):
+        rsp = requests.get(f"{self.loom_base_url}/wait/{tx_id}")
+        rsp.raise_for_status()
+        return rsp.json()
+
     def stop(self):
         rsp = requests.post(f"{self.loom_base_url}/stop")
         rsp.raise_for_status()
