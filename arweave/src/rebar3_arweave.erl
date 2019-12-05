@@ -38,7 +38,8 @@ init(State0) ->
     AppFileSrc = filename:join(Dir, "arweave.app.src"),
     App1 = rebar_app_info:app_file_src(App0, AppFileSrc),
     App2 = rebar_app_info:set(App1, src_dirs, ["_src"]),
-    App = rebar_app_info:source(App2, {git, CloneURL, {tag, Version}}),
+    App = rebar_app_info:source(App2, {git, binary_to_list(CloneURL),
+                                       {tag, Version}}),
 
     State1 = rebar_state:set(State0, arweave_app, App),
     State2 = rebar_state:project_apps(State1, App),

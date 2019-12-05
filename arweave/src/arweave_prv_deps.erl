@@ -21,7 +21,6 @@ init(State) ->
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->
     App = rebar_state:get(State, arweave_app),
-    rebar_api:info("Fetching arweave (from ~p)", [rebar_app_info:source(App)]),
     Dir = rebar_app_info:dir(App),
     case (not filelib:is_dir(Dir))
         orelse rebar_resource_v2:needs_update(App, State) of
@@ -30,6 +29,7 @@ do(State) ->
     end.
 
 fetch(Dir, State, App) ->
+    rebar_api:info("Fetching arweave (from ~p)", [rebar_app_info:source(App)]),
     case rebar_resource_v2:download(Dir, App, State) of
         ok -> case rebar_utils:sh("make gitmodules", [{cd, Dir}, use_stdout]) of
                   {ok, _Output} ->

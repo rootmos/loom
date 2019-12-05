@@ -16,7 +16,11 @@ clean:
 DOCKER ?= docker
 DOCKER_COMPOSE ?= docker-compose
 DOCKER_REPO ?= rootmos/loom
+ifneq ($(wildcard .git),)
 export DOCKER_IMAGE ?= $(DOCKER_REPO):$(shell git rev-parse HEAD | head -c7)
+else
+export DOCKER_IMAGE ?= $(DOCKER_REPO):latest
+endif
 
 test-compose:
 	$(DOCKER_COMPOSE) build
